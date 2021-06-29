@@ -11,7 +11,7 @@ struct Variant: Codable {
     let id: Int
     let text: String
     
-    func getVariant() -> String{
+    func getVariant() -> String {
         return "id: \(id) вариант: \(text)"
     }
 }
