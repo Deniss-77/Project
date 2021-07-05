@@ -1,6 +1,6 @@
 //
 //  Cellable.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 18.06.2021.
 //

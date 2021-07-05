@@ -1,6 +1,6 @@
 //
 //  ViewModel.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 16.06.2021.
 //
@@ -12,26 +12,29 @@ class ViewModel: TBViewModelType {
     // MARK: Properties
     
     private var networkManager = NetworkManager()
-    private var arrayOfView: [String] = []
-    var arrayOfData: Boxing<[NameAndData]?> = Boxing(nil)
+    private var arrayOrder: [String] = []
+    var arrayOfPlayers: Boxing<[List]?> = Boxing(nil) {
+        didSet {
+            print("xren")
+        }
+    }
 
     // MARK: Methods
     
     func numberOfRows() -> Int {
-        return arrayOfView.count
+        return arrayOrder.count
     }
     
     func cellViewModel(for indexPath: IndexPath) -> TBCellViewModelType? {
-        let currentViewName = arrayOfView[indexPath.row]
-        guard let currentData = arrayOfData.value?.first(where: { $0.name == currentViewName }) else { return nil }
-        return TBCellViewModel(data: currentData)
+        let currentOrder = arrayOrder[indexPath.row]
+        guard let currentPlayer = arrayOfPlayers.value?.first(where: { $0.name == currentOrder }) else { return nil }
+        return TBCellViewModel(player: currentPlayer)
     }
     
-    func updateData(completion: @escaping (Boxing<[NameAndData]?>) -> ()) {
-        networkManager.fetchData { model in
-            self.arrayOfView = model.first?.view ?? [""]
-            self.arrayOfData = Boxing(model.first?.data)
-            completion(self.arrayOfData)
+    func updateData() {
+        networkManager.fetchData { [weak self] model in
+            self?.arrayOrder = model?.first?.order ?? [""]
+            self?.arrayOfPlayers.value = model?.first?.list
         }
     }
     

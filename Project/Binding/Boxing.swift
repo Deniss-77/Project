@@ -1,6 +1,6 @@
 //
 //  Boxing.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 20.06.2021.
 //
@@ -30,6 +30,5 @@ class Boxing<T> {
     
     func bind(_ listener: @escaping Listener) {
         self.listener = listener
-        listener(value)
     }
 }

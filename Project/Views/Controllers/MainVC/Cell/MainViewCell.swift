@@ -1,70 +1,147 @@
 //
 //  MainViewCell.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 17.06.2021.
 //
 
 import UIKit
 
-class MainViewCell: UITableViewCell, Cellable {
-
-    // MARK: IBOutlets
-    
-    @IBOutlet weak var nameButton: UIButton!
-    @IBOutlet weak var textBlockButton: UIButton!
-    @IBOutlet weak var selectedButton: UIButton!
-    @IBOutlet weak var viewImage: UIImageView!
-    @IBOutlet weak var variantLabel: UILabel!
+class MainViewCell: UITableViewCell {
     
     // MARK: Properties
     
-    private var network = NetworkManager()
+    static let identifier = "tableCell"
     
-    // completions
-    var alertControllerOfName: (() -> ())?
-    var alertControllerOfTextBlock: (() -> ())?
-    var alertControllerOfSelected: (() -> ())?
+    private var networkManager = NetworkManager()
+
+    let nameLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.boldSystemFont(ofSize: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let positionLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 20)
+        label.numberOfLines = 0
+        return label
+    }()
+
+    let ratingLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 20)
+        return label
+    }()
+
+    let viewImage: UIImageView = {
+        let image = UIImageView(frame: CGRect(origin: CGPoint(), size: CGSize(width: 150, height: 150)))
+        image.layer.cornerRadius = image.frame.size.height / 2
+        image.clipsToBounds = true
+        return image
+    }()
+
+    let levelLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.numberOfLines = 0
+        return label
+    }()
 
     // MARK: Methods
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+
+        addSubviews()
+        setupLayout()
     }
     
-    weak var viewModel: TBCellViewModelType? {
-        willSet(viewModel) {
-            guard let viewModel = viewModel else { return }
-            nameButton.setTitle(viewModel.name, for: .normal)
-            textBlockButton.setTitle(viewModel.textBlock, for: .normal)
-            selectedButton.setTitle(viewModel.selector, for: .normal)
-            if viewModel.url != "" {
-                network.getPhoto { image in
-                    DispatchQueue.main.async {
-                        self.viewImage.image = image
-                    }
-                }
-            }
-            if viewModel.variant.isEmpty != true {
-                let currentArray = viewModel.variant
-                let variants = currentArray.map({ $0.getVariant() })
-                variantLabel.text = "\(variants)"
-            }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(viewModel: TBCellViewModelType? ) {
+        guard let viewModel = viewModel else { return }
+        nameLabel.text = viewModel.name
+        positionLabel.text = viewModel.type
+        ratingLabel.text = "Rating: \(viewModel.rating)"
+        if viewModel.url == "" {
+            self.viewImage.image = UIImage(named: "DefaultImage")
+        } else {
+            networkManager.getPhoto(url: viewModel.url, completion: { image in
+                self.viewImage.image = image
+            })
+        }
+        let index = viewModel.rating // рейтинг
+        if index != 0 {
+            levelLabel.text = "\(viewModel.level[index - 1].getResult())"
         }
     }
     
-    // MARK: IBActions
-    
-    @IBAction func nameButton(_ sender: Any) {
-        alertControllerOfName?()
+    override func prepareForReuse() {
+        viewImage.image = nil
+        levelLabel.text = ""
     }
     
-    @IBAction func textBlockButton(_ sender: Any) {
-        alertControllerOfTextBlock?()
+}
+
+// MARK: Visual parameters
+
+extension MainViewCell {
+    
+    func addSubviews() {
+        contentView.addSubview(nameLabel)
+        contentView.addSubview(positionLabel)
+        contentView.addSubview(ratingLabel)
+        contentView.addSubview(viewImage)
+        contentView.addSubview(levelLabel)
     }
     
-    @IBAction func selectedButton(_ sender: Any) {
-        alertControllerOfSelected?()
+    func setupLayout() {
+        
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        let nameButtonConstraints = [
+            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            nameLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20),
+            nameLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20)
+        ]
+        NSLayoutConstraint.activate(nameButtonConstraints)
+        
+        positionLabel.translatesAutoresizingMaskIntoConstraints = false
+        let textBlockButtonConstraints = [
+            positionLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 20),
+            positionLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20),
+            positionLabel.rightAnchor.constraint(equalTo: viewImage.leftAnchor, constant: -15)
+        ]
+        NSLayoutConstraint.activate(textBlockButtonConstraints)
+        
+        ratingLabel.translatesAutoresizingMaskIntoConstraints = false
+        let selectorButtonConstraints = [
+            ratingLabel.topAnchor.constraint(equalTo: positionLabel.bottomAnchor, constant: 20),
+            ratingLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20),
+            positionLabel.rightAnchor.constraint(equalTo: viewImage.leftAnchor, constant: -15)
+        ]
+        NSLayoutConstraint.activate(selectorButtonConstraints)
+        
+        viewImage.translatesAutoresizingMaskIntoConstraints = false
+        let viewImageConstraints = [
+            viewImage.heightAnchor.constraint(equalToConstant: 150),
+            viewImage.widthAnchor.constraint(equalToConstant: 150),
+            viewImage.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 10),
+            viewImage.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20)
+        ]
+        NSLayoutConstraint.activate(viewImageConstraints)
+        
+        levelLabel.translatesAutoresizingMaskIntoConstraints = false
+        let variantsLabelConstraints = [
+            levelLabel.topAnchor.constraint(equalTo: ratingLabel.bottomAnchor, constant: 20),
+            levelLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            levelLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20),
+            levelLabel.rightAnchor.constraint(equalTo: viewImage.leftAnchor, constant: -15)
+        ]
+        NSLayoutConstraint.activate(variantsLabelConstraints)
     }
     
 }

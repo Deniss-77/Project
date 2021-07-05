@@ -1,18 +1,18 @@
 //
 //  TBCellViewModelType.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 20.06.2021.
 //
 
 import Foundation
 
-protocol TBCellViewModelType: AnyObject {
+protocol TBCellViewModelType {
     
     var name: String  { get }
-    var textBlock: String  { get }
-    var selector: String  { get }
+    var type: String  { get }
     var url: String  { get }
-    var variant: [Variant] { get }
+    var rating: Int { get }
+    var level: [Level] { get }
     
 }

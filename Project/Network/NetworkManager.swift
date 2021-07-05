@@ -1,60 +1,56 @@
 //
 //  NetworkManager.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 16.06.2021.
 //
 
 import UIKit
+import Alamofire
 
 class NetworkManager {
     
     /// Получение данных с сервера
-    /// - Parameter completion: someData c типом данных Model
-    /// - Returns: Возвращает массив обработанных данных
+    /// - Parameter completion: players  c типом данных ModelData?
+    /// - Returns: Возвращает массив полученных данных
     
-    func fetchData(completion: @escaping (_ someData: [ModelData]) -> ()) {
+    func fetchData(completion: @escaping (_ players: [ModelData]?) -> ()) {
         
-        let urlString = "https://pryaniky.com/static/json/sample.json"
+        let urlString = "https://run.mocky.io/v3/571a7e66-cb66-4005-8b5a-cbe247e15013"
         guard let url = URL(string: urlString) else { return }
         
-        let session = URLSession.shared
-        
-        let dataTask = session.dataTask(with: url) { data, response, error in
+        AF.request(url).responseDecodable(of: ModelData.self) { (response) in
             
-            guard let data = data else { return }
-            
-            let decoder = JSONDecoder()
-            var array = [ModelData]()
-            
-            do {
-                let someData = try decoder.decode(ModelData.self, from: data)
-                array.append(someData)
-                completion(array)
-            } catch let error {
-                print(error)
+            switch response.result {
+            case .success(let data):
+                var playerArray = [ModelData]()
+                playerArray.append(data)
+                completion(playerArray)
+            case .failure:
+                completion(nil)
             }
-            
         }
-        dataTask.resume()
+        
     }
     
-    
     /// Загрузка фото
-    /// - Parameter completion: тип данных UIImage
+    /// - Parameter completion: тип данных UIImage?
     /// - Returns: Возращает фото по url
     
-    func getPhoto(completion: @escaping(UIImage) -> ()) {
+    func getPhoto(url: String, completion: @escaping(UIImage?) -> () ) {
         
-        let urlString = "https://pryaniky.com/static/img/logo-a-512.png"
+        let urlString = url
         guard let url = URL(string: urlString) else { return }
         
-        let session = URLSession.shared
-        session.dataTask(with: url) { (data, response, error) in
-            if let data = data, let image = UIImage(data: data) {
+        AF.request(url).responseData { (response) in
+            switch response.result {
+            case .success(let data):
+                guard let image = UIImage(data: data) else { return }
                 completion(image)
+            case .failure:
+                completion(nil)
             }
-        }.resume()
+        }
     }
     
 }

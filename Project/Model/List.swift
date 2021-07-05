@@ -1,13 +1,13 @@
 //
-//  NameAndData.swift
-//  Pryaniky
+//  List.swift
+//  Project
 //
 //  Created by Denis Kravets on 24.06.2021.
 //
 
 import Foundation
 
-struct NameAndData: Codable {
+struct List: Codable {
     let name: String
-    let data: SomeData
+    let parameters: Parameters
 }

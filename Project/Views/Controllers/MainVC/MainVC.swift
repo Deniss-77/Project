@@ -1,6 +1,6 @@
 //
-//  ViewController.swift
-//  Pryaniky
+//  MainVC.swift
+//  Project
 //
 //  Created by Denis Kravets on 13.06.2021.
 //
@@ -8,31 +8,39 @@
 import UIKit
 
 class MainVC: UIViewController {
-    
-    // MARK: IBOutlets
  
-    @IBOutlet weak var tableView: UITableView! {
-        didSet {
-            tableView.register(UINib(nibName: MainViewCell.nibName, bundle: nil), forCellReuseIdentifier: MainViewCell.identifier)
-        }
-    }
-    
     // MARK: Properties
     
-    private var viewModel: TBViewModelType? = ViewModel()
+    let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.register(MainViewCell.self, forCellReuseIdentifier: MainViewCell.identifier)
+        tableView.allowsSelection = false
+        tableView.tableFooterView = UIView()
+        return tableView
+    }()
+    
+    var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
+    
+    var viewModel: TBViewModelType?
     
     // MARK: Life cycle viewController
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        viewModel?.arrayOfData.bind({ _ in
-            self.viewModel?.updateData(completion: { _ in
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            })
+        addSubviews()
+        setupConstraints()
+        tableViewDelegate()
+        activityIndicator.startAnimating()
+        
+        viewModel?.arrayOfPlayers.bind({ _ in
+            DispatchQueue.main.async {
+                self.activityIndicator.isHidden = true
+                self.tableView.reloadData()
+            }
         })
+        
+        viewModel?.updateData()
     }
     
 }
@@ -48,16 +56,7 @@ extension MainVC: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: MainViewCell.identifier, for: indexPath) as! MainViewCell
         let cellViewModel = viewModel?.cellViewModel(for: indexPath)
-        cell.alertControllerOfName = {
-            self.alertControllerOfName()
-        }
-        cell.alertControllerOfTextBlock = {
-            self.alertControllerOfTextBlock()
-        }
-        cell.alertControllerOfSelected = {
-            self.alertControllerOfSelected()
-        }
-        cell.viewModel = cellViewModel
+        cell.configure(viewModel: cellViewModel)
         return cell
     }
     

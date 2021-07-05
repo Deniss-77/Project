@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Pryaniky
+//  Project
 //
 //  Created by Denis Kravets on 13.06.2021.
 //
